@@ -1,0 +1,62 @@
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    public float moveSpeed = 5f;
+    public float jumpForce = 10f;
+    public GameObject bulletPrefab;
+    public Transform shootPoint;
+
+    private Rigidbody2D rb;
+    private bool isGrounded;
+    private float moveInput;
+
+    // Controls for each player
+    public KeyCode shootKey;
+    public KeyCode jumpKey;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        Move();
+        if (Input.GetKeyDown(shootKey))
+        {
+            Shoot();
+        }
+        if (Input.GetKeyDown(jumpKey) && isGrounded)
+        {
+            Jump();
+        }
+    }
+
+    void Move()
+    {
+        moveInput = Input.GetAxis("Horizontal");
+        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+    }
+
+    void Jump()
+    {
+        rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+        isGrounded = false; // Reset isGrounded in collision
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
+    }
+
+    void Shoot()
+    {
+        GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, Quaternion.identity);
+        Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
+        bulletRb.AddForce(Vector2.right * (transform.localScale.x > 0 ? 1 : -1) * 10f, ForceMode2D.Impulse);
+    }
+}
